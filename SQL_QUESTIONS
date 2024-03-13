@@ -1,0 +1,36 @@
+SELECT 
+    COUNT(DISTINCT customer_id) AS total_customers,
+    (SELECT COUNT(DISTINCT customer_id)
+     FROM CustomerPurchases
+     WHERE product_id = 'A' AND payment_status = 'paid'
+     AND customer_id IN (SELECT customer_id FROM CustomerPurchases WHERE product_id = 'B' AND payment_status = 'paid')
+    ) AS customers_with_both,
+    ROUND((customers_with_both * 100.0) / total_customers, 2) AS percentage
+FROM CustomerPurchases;
+
+
+
+
+SELECT 
+    SUM(CASE WHEN s.sale_date = pd.first_day OR s.sale_date = pd.last_day THEN s.amount ELSE 0 END) AS sales_first_last_days,
+    SUM(s.amount) AS total_sales,
+    ROUND(sales_first_last_days * 100.0 /total_sales, 2) AS percentage_sales
+FROM Sales s
+INNER JOIN Promotion pd ON s.promotion_id = pd.promotion_id;
+
+
+
+SELECT 
+    product_id,
+    COUNT(*) AS count
+FROM Sales
+WHERE sale_id IN (
+    SELECT sale_id
+    FROM Sales
+    WHERE product_id = 'ProductA'
+)
+AND product_id != 'ProductA'
+GROUP BY product_id
+ORDER BY count DESC
+LIMIT 5;
+
